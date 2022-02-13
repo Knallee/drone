@@ -2,24 +2,4 @@ This repo contains the code for my drone that I built in 2016.
 
 The used mcu is the TMS320F28069. 
 
-The control algorithm used in this project is a cascaded PID controller. 
-
-//        							    ______
-//           						   |      |
-//           				     ----->|  Kp  |----------
-//           				    |      |______|			 | +
-//                   _____      |       ______         __V__          _____    	 ______     _____________
-//   target angle + /     \     |      |      |     + /     \      + /     \   	|      |   |             |
-//  --------------->|  Σ  |-----#----->|  Ki  |------>|  Σ  |------->|  Σ  |----| Kpff |-->|   Process   |---------|
-//           		\_____/            |______|       \_____/        \_____/   	|______|   |_____________|         |
-//                    ^ -							     ^	-           ^	-   			                       |
-//                    | 							     |      		|	                            	       |
-//  				  |								     |              |   _______                   _________    |
-//  				  |								     |              |  |       | angle velocity  |         |   |
-//  				  |								     |              |--| GyroG |-----------------| Sensors |<--|
-//  				  |								     |                 |_______|       		     |_________|   |
-//  				  |								     |                                                         |
-//           		  |							      ______    			              _________                |
-//                    |                              |      |   			    angle    |         |               |
-//                    |------------------------------|  Kd  |<---------------------------| Sensors |<--------------|
-//                                                   |______|                			 |_________|
+The control algorithm used in this project is a cascaded PID controller. Fot details regarding that see file flightControl.cla.
