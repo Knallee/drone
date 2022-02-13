@@ -1,0 +1,442 @@
+//###########################################################################
+// Description:
+//
+// Task 1: Implements a 5 tap FIR filter
+//
+//###########################################################################
+// $TI Release: F2806x C/C++ Header Files and Peripheral Examples V141 $
+// $Release Date: January 19, 2015 $
+// $Copyright: Copyright (C) 2011-2015 Texas Instruments Incorporated -
+//             http://www.ti.com/ ALL RIGHTS RESERVED $
+//###########################################################################
+
+#include "flightControl.h"
+#include "DSP28x_Project.h"
+// Include the test header file whose name is based on the test name
+// which is defined by the macro TEST on the command line
+#include "flightControl_shared.h"
+#include "global.h"
+#include "compileGuard.h"
+#include "CLAMath.h"
+#include "initADC.h"
+
+
+
+
+__interrupt void Cla1Task1(void) {
+
+	dataOffset 	= 30.0;
+	pitchData 	= 0.0;
+	rollData	= 0.0;
+	yawData		= 0.0;
+
+}
+__interrupt void Cla1Task2(void) {
+}
+__interrupt void Cla1Task3(void) {
+
+
+}
+__interrupt void Cla1Task4(void) {
+
+
+//			MM     MM   PPPPPPP    UU    UU
+//	  		MMMM MMMM   PP    PP   UU    UU
+//	*****	MM MMM MM   PP    PP   UU    UU   *****		#########################################################################################################
+//	*****	MM  M  MM   PPPPPPP    UU    UU   *****  	#########################################################################################################
+//	*****	MM     MM   PP		   UU    UU   ***** 	#########################################################################################################
+//	  		MM     MM   PP	       UU    UU
+//			MM     MM   PP          UUUUUU
+
+	int i;
+	long temp[4];  // A temporary variable to perform sign extension
+
+	// Quaternions
+    float qw = 1.0;
+	float qx = 0.0;
+	float qy = 0.0;
+	float qz = 0.0;
+
+	//Local Variables
+
+    float num[2],den[2];
+    float fVal;
+
+	int mask = 0x00008000;
+	temp[0] = (mpu6050_fifoBuffer[0] << 8)  | mpu6050_fifoBuffer[1];
+	temp[1] = (mpu6050_fifoBuffer[4] << 8)  | mpu6050_fifoBuffer[5];
+	temp[2] = (mpu6050_fifoBuffer[8] << 8)  | mpu6050_fifoBuffer[9];
+	temp[3] = (mpu6050_fifoBuffer[12] << 8) | mpu6050_fifoBuffer[13];
+    for (i = 0; i<4; i++)
+    {
+    if (mask & temp[i]) temp[i] += 0xFFFF0000;
+    }
+    qw = (double)(temp[0]) / 16384.0f;
+    qx = (double)(temp[1]) / 16384.0f;
+    qy = (double)(temp[2]) / 16384.0f;
+    qz = (double)(temp[3]) / 16384.0f;
+
+    num[0]  = (2 * qw * qx + 2 * qy * qz);
+    num[1]  = (2 * qx * qy + 2 * qw * qz);
+
+    den[0]	= (1 - 2 * qy * qy - 2 * qx * qx);
+    den[1]	= (1 - 2 * qw * qw - 2 * qx *qx);
+
+    fVal = 2 * qw * qy - 2 * qx * qz;
+
+
+    pitch  	=  CLAatan2(num[0],den[0])  *57.3;
+    tempYaw =  CLAatan2(num[1],den[1])  *57.3 - bias;
+    roll    =  CLAasin(fVal)*57.3;
+
+//    pitchData.f	= pitch;
+
+    if (bias == 0) {
+
+        if (sensor_init == 4001) bias = tempYaw;
+
+    }
+
+	if (oldYaw < -10 && tempYaw > 0) yawCount--;
+	if (oldYaw > 200 && tempYaw < 0) yawCount++;
+
+	if (yawCount  > 0)  yaw = tempYaw + 360*yawCount;
+	if (yawCount  < 0)  yaw = tempYaw + 360*yawCount;
+	if (yawCount == 0)  yaw = tempYaw;						// V Creates a contiunous yaw
+    oldYaw = tempYaw;
+
+
+
+
+
+
+
+//			FFFFFFFF   IIII   LL		TTTTTTTT	EEEEEEEE   RRRRRRR 	   SSSSSS
+//	 		FF		    II    LL           TT       EE         RR    RR   SS    SS
+//	*****	FF		    II    LL           TT       EE         RR    RR	  SS         *****	  ##################################################################
+//	*****	FFFF	    II    LL           TT       EEEE       RRRRRRR     SSSSSS    *****    ##################################################################
+//	*****	FF		    II	  LL      	   TT		EE         RR  RR	        SS   *****	  ##################################################################
+//	   		FF		    II    LL           TT       EE         RR   RR    SS    SS
+//			FF		   IIII   LLLLLLLL     TT       EEEEEEEE   RR    RR    SSSSSS
+//           							______
+//           						   |      |
+//           				     ----->|  Kp  |----------
+//           				    |      |______|			 | +
+//                   _____      |       ______         __V__          _____    	 ______     _____________
+//   target angle + /     \     |      |      |     + /     \      + /     \   	|      |   |             |
+//  --------------->|  Σ  |-----#----->|  Ki  |------>|  Σ  |------->|  Σ  |----| Kpff |-->|   Process   |---------|
+//           		\_____/            |______|       \_____/        \_____/   	|______|   |_____________|         |
+//                    ^ -							     ^	-           ^	-   			                       |
+//                    | 							     |      		|	                            	       |
+//  				  |								     |              |   _______                   _________    |
+//  				  |								     |              |  |       | angle velocity  |         |   |
+//  				  |								     |              |--| GyroG |-----------------| Sensors |<--|
+//  				  |								     |                 |_______|       		     |_________|   |
+//  				  |								     |                                                         |
+//           		  |							      ______    			              _________                |
+//                    |                              |      |   			    angle    |         |               |
+//                    |------------------------------|  Kd  |<---------------------------| Sensors |<--------------|
+//                                                   |______|                			 |_________|
+//
+//
+//					PPPPPPP    IIII   TTTTTTTT   CCCCCC	   HH    HH
+//			  *		PP    PP    II       TT     CC    CC   HH    HH     *
+//			 ***	PP    PP    II       TT     CC         HH    HH    *** 		#################################################################################
+//          *****	PPPPPPP     II       TT     CC         HHHHHHHH   *****  	#################################################################################
+//			 ***	PP	    	II		 TT		CC		   HH    HH    ***		#################################################################################
+//			  *		PP	        II       TT     CC    CC   HH    HH     *
+//					PP         IIII      TT      CCCCCC    HH    HH
+
+    thrust_CLA = thrust;
+
+    if (thrust < 500 ) thrust_CLA = 500;
+
+
+
+    thrust_bias = (thrust_CLA + _THRUST_ADDITION - target_norm) * thrust_scale;
+
+
+    max_out 			= 0.5 * thrust_bias;
+    I_term_max_pitch	= 0.3 * thrust_bias;
+
+    if (sensor_init > 3970 && sensor_init < 4001) {
+
+
+    	ADC_gyro_pitch_sum += ADC_GYRO_PITCH;
+    	ADC_gyro_roll_sum  += ADC_GYRO_ROLL;
+    	ADC_gyro_yaw_sum   += ADC_GYRO_YAW;
+
+    	mean_count++;
+
+    	if (sensor_init == 4000) {
+
+    		mean_offset_pitch = ADC_gyro_pitch_sum / mean_count;
+    		mean_offset_roll  = ADC_gyro_roll_sum  / mean_count;
+    		mean_offset_yaw   = ADC_gyro_yaw_sum   / mean_count;
+
+    	}
+
+    }
+
+
+#if _REMOTE_TUNE
+
+#if _PITCH_PID
+
+    	Kp_pitch 		= uint_Kp_pitch			* 0.1;
+    	Ki_pitch 		= uint_Ki_pitch			* 0.1;
+		Kd_pitch 		= uint_Kd_pitch			* 0.1;
+		Kp_ff_pitch		= uint_Kp_ff_pitch		* 0.1;
+		gain_gyro_pitch	= uint_gain_gyro_pitch	* 0.1;
+
+#endif
+
+#if _ROLL_PID
+
+    	Kp_roll 		= uint_Kp_roll			* 0.1;
+    	Ki_roll 		= uint_Ki_roll			* 0.1;
+		Kd_roll 		= uint_Kd_roll			* 0.1;
+		Kp_ff_roll		= uint_Kp_ff_roll		* 0.1;
+		gain_gyro_roll	= uint_gain_gyro_roll	* 0.1;
+
+#endif
+
+#if _YAW_PID
+
+    	Kp_yaw 			= uint_Kp_yaw			* 0.1;
+    	Ki_yaw 			= uint_Ki_yaw			* 0.1;
+		Kd_yaw 			= uint_Kd_yaw			* 0.1;
+		Kp_ff_yaw		= uint_Kp_ff_yaw		* 0.1;
+		gain_gyro_yaw	= uint_gain_gyro_yaw	* 0.1;
+
+
+#endif
+
+#endif
+
+
+
+    if (sensor_ready == TRUE && thrust_CLA >= _NEAR_TAKE_OFF) {   	// Control filters are HERE <======================================================================
+
+    	pitchData = (Uint16) ((pitch + dataOffset) * 1000.0);		// |
+    	rollData  = (Uint16) ((roll + dataOffset)  * 1000.0);		// |	Data to be sent to computer. Fitted in a Uint16,
+    	yawData   = (Uint16) ((yaw + dataOffset)   * 1000.0);		// V  	multiplied by 1000 and added an offset of 30 000.
+
+
+
+
+#if _PITCH_PID
+
+    	trim_pitch_f	  =  (trim_pitch - 500)*0.1;
+
+    	target_pitch_CLA  = (-(target_pitch - target_norm) * _PITCH_ROLL_STICK_SCALE);
+
+		error_pitch 	  =  target_pitch_CLA / target_scale - pitch + trim_pitch_f;
+
+		P_pitch           =  Kp_pitch * error_pitch;
+
+		I_partial_pitch   =  Ki_pitch * one_half * h * (error_old_pitch + error_pitch);
+
+		D_pitch			  =  Kd_pitch * h_inv * (pitch - pitch_old);   	// Derivative on measurement...neglecting the setpoint. This is implemented
+																		// to prevent a derivative kick.
+
+
+
+		I_pitch += I_partial_pitch;
+
+		if(I_pitch >  I_term_max_pitch)  I_pitch =  I_term_max_pitch;
+		if(I_pitch < -I_term_max_pitch)  I_pitch = -I_term_max_pitch;
+
+		out_first_pitch = P_pitch + I_pitch - D_pitch;
+
+		gyro_unbiased_pitch = ADC_GYRO_PITCH - mean_offset_pitch;
+
+		out_second_pitch = Kp_ff_pitch * (out_first_pitch - (gain_gyro_pitch * gyro_unbiased_pitch)); // Inner control loop
+
+//		out_second = P_pitch + I_pitch - D_pitch;
+
+		if(out_second_pitch >  max_out) out_second_pitch =  max_out;
+		if(out_second_pitch < -max_out) out_second_pitch = -max_out;
+
+
+
+
+
+//		EPwm2Regs.CMPA.half.CMPA = MIN_MOTOR + thrust_bias - out_second_pitch;
+//		EPwm2Regs.CMPB 			 = MIN_MOTOR + thrust_bias - out_second_pitch;
+//
+//		EPwm1Regs.CMPA.half.CMPA = MIN_MOTOR + thrust_bias + out_second_pitch;
+//		EPwm1Regs.CMPB 			 = MIN_MOTOR + thrust_bias + out_second_pitch;
+
+	    pitch_old 		= pitch;
+	    error_old_pitch = error_pitch;
+
+#endif
+
+#if _ROLL_PID
+
+	    trim_roll_f		 =  (trim_roll - 500) * 0.1;
+
+    	target_roll_CLA  = (target_roll - target_norm) * _PITCH_ROLL_STICK_SCALE;
+
+		error_roll 		 =  target_roll_CLA / target_scale - roll + trim_roll_f;
+
+		P_roll           =  Kp_roll * error_roll;
+
+		I_partial_roll   =  Ki_roll * one_half * h * (error_old_roll + error_roll);
+
+		D_roll			 =  Kd_roll * h_inv * (roll - roll_old);   	// Derivative on measurement...neglecting the setpoint. This is implemented
+																	// to prevent a derivative kick.
+
+
+
+		I_roll += I_partial_roll;
+
+		if(I_roll >  I_term_max_roll)  I_roll =  I_term_max_roll;
+		if(I_roll < -I_term_max_roll)  I_roll = -I_term_max_roll;
+
+		out_first_roll = P_roll + I_roll - D_roll;
+
+		gyro_unbiased_roll = ADC_GYRO_ROLL - mean_offset_roll;
+
+		out_second_roll = Kp_ff_roll * (out_first_roll + (gain_gyro_roll * gyro_unbiased_roll)); // Inner control loop
+
+//		out_second = P_roll + I_roll - D_roll;
+
+		if(out_second_roll >  max_out) out_second_roll =  max_out;
+		if(out_second_roll < -max_out) out_second_roll = -max_out;
+
+//		EPwm2Regs.CMPA.half.CMPA = MIN_MOTOR + thrust_bias + out_second_roll - out_second_pitch;
+//		EPwm2Regs.CMPB 			 = MIN_MOTOR + thrust_bias - out_second_roll - out_second_pitch;
+//
+//		EPwm1Regs.CMPA.half.CMPA = MIN_MOTOR + thrust_bias + out_second_roll + out_second_pitch;
+//		EPwm1Regs.CMPB 			 = MIN_MOTOR + thrust_bias - out_second_roll + out_second_pitch;
+
+
+
+//		EPwm2Regs.CMPA.half.CMPA = MIN_MOTOR + thrust_bias + out_second_roll - out_second_pitch;
+//		EPwm2Regs.CMPB 			 = MIN_MOTOR + thrust_bias - out_second_roll - out_second_pitch;
+//
+//		EPwm1Regs.CMPA.half.CMPA = MIN_MOTOR + thrust_bias + out_second_roll + out_second_pitch;
+//		EPwm1Regs.CMPB 			 = MIN_MOTOR + thrust_bias - out_second_roll + out_second_pitch;
+
+	    roll_old 		= roll;
+	    error_old_roll  = error_roll;
+
+#endif
+
+#if _YAW_PID
+
+	    yaw_count++;
+
+	    if (yaw_count == _100_MS) {
+
+	    	target_yaw_CLA	+= ((float) (target_yaw - target_norm))*_YAW_TARGET_SCALE;
+
+	    	yaw_count = 0;
+
+	    }
+
+
+//	    error_yaw 		= (target_yaw - target_norm)/target_scale - yaw;
+
+		error_yaw 		= target_yaw_CLA - yaw;
+
+		P_yaw           =  Kp_yaw * error_yaw;
+
+		I_partial_yaw   =  Ki_yaw * one_half * h * (error_old_yaw + error_yaw);
+
+		D_yaw			=  Kd_yaw * h_inv * (yaw - yaw_old);   	// Derivative on measurement...neglecting the setpoint. This is implemented
+																// to prevent a derivative kick.
+
+
+
+		I_yaw += I_partial_yaw;
+
+		if(I_yaw >  I_term_max_yaw)  I_yaw =  I_term_max_yaw;
+		if(I_yaw < -I_term_max_yaw)  I_yaw = -I_term_max_yaw;
+
+		out_first_yaw = P_yaw + I_yaw - D_yaw;
+
+		gyro_unbiased_yaw = ADC_GYRO_YAW - mean_offset_yaw;
+
+		out_second_yaw = Kp_ff_yaw * (out_first_yaw - (gain_gyro_yaw * gyro_unbiased_yaw)); // Inner control loop
+
+//		out_second = P_yaw + I_yaw - D_yaw;
+
+		if(out_second_yaw >  max_out) out_second_yaw =  max_out;
+		if(out_second_yaw < -max_out) out_second_yaw = -max_out;
+
+
+
+#if _MOTORS
+
+//		EPwm2Regs.CMPA.half.CMPA = MIN_MOTOR + thrust_bias + out_second_yaw;
+//		EPwm2Regs.CMPB 			 = MIN_MOTOR + thrust_bias - out_second_yaw;
+//
+//		EPwm1Regs.CMPA.half.CMPA = MIN_MOTOR + thrust_bias - out_second_yaw;
+//		EPwm1Regs.CMPB 			 = MIN_MOTOR + thrust_bias + out_second_yaw;
+
+//		EPwm2Regs.CMPA.half.CMPA = MIN_MOTOR + thrust_bias + out_second_yaw - out_second_pitch;
+//		EPwm2Regs.CMPB 			 = MIN_MOTOR + thrust_bias - out_second_yaw - out_second_pitch;
+//
+//		EPwm1Regs.CMPA.half.CMPA = MIN_MOTOR + thrust_bias - out_second_yaw + out_second_pitch;
+//		EPwm1Regs.CMPB 			 = MIN_MOTOR + thrust_bias + out_second_yaw + out_second_pitch;
+
+//		EPwm2Regs.CMPA.half.CMPA = MIN_MOTOR + thrust_bias + out_second_yaw + out_second_roll;
+//		EPwm2Regs.CMPB 			 = MIN_MOTOR + thrust_bias - out_second_yaw - out_second_roll;
+//
+//		EPwm1Regs.CMPA.half.CMPA = MIN_MOTOR + thrust_bias - out_second_yaw + out_second_roll;
+//		EPwm1Regs.CMPB 			 = MIN_MOTOR + thrust_bias + out_second_yaw - out_second_roll;
+
+
+//
+
+		EPwm2Regs.CMPA.half.CMPA = MIN_MOTOR + thrust_bias + out_second_yaw + out_second_roll - out_second_pitch;
+		EPwm2Regs.CMPB 			 = MIN_MOTOR + thrust_bias - out_second_yaw - out_second_roll - out_second_pitch;
+
+		EPwm1Regs.CMPA.half.CMPA = MIN_MOTOR + thrust_bias - out_second_yaw + out_second_roll + out_second_pitch;
+		EPwm1Regs.CMPB 			 = MIN_MOTOR + thrust_bias + out_second_yaw - out_second_roll + out_second_pitch;
+
+#endif
+
+
+	    yaw_old 		= yaw;
+	    error_old_yaw   = error_yaw;
+
+#endif
+
+
+    }
+
+#if _MOTORS
+
+	if (sensor_ready == TRUE && thrust_CLA < _NEAR_TAKE_OFF) {
+
+
+
+		EPwm2Regs.CMPA.half.CMPA = MIN_MOTOR + thrust_bias;
+		EPwm2Regs.CMPB 			 = MIN_MOTOR + thrust_bias;
+
+		EPwm1Regs.CMPA.half.CMPA = MIN_MOTOR + thrust_bias;
+		EPwm1Regs.CMPB 			 = MIN_MOTOR + thrust_bias;
+
+	}
+
+#endif
+
+}
+__interrupt void Cla1Task5(void) {
+
+}
+__interrupt void Cla1Task6(void) {
+
+}
+__interrupt void Cla1Task7(void) {
+
+}
+
+__interrupt void Cla1Task8(void) {
+
+}
+

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExportImportMemento.1>
+<VarMeta IMemento.internal.id="flightControlPayload"/>
+<VarMeta IMemento.internal.id="headerByteCount"/>
+<VarMeta IMemento.internal.id="countii"/>
+<VarMeta IMemento.internal.id="P_pitch"/>
+<VarMeta IMemento.internal.id="I_term_old_pitch"/>
+<VarMeta IMemento.internal.id="D_pitch"/>
+<VarMeta IMemento.internal.id="ready_to_fly"/>
+<VarMeta IMemento.internal.id="pitch"/>
+<VarMeta IMemento.internal.id="EPwm1Regs.CMPB"/>
+<VarMeta IMemento.internal.id="EPwm2Regs.CMPA.half.CMPA"/>
+<VarMeta IMemento.internal.id="target_pitch"/>
+<VarMeta IMemento.internal.id="thrust"/>
+<VarMeta IMemento.internal.id="Kp_pitch"/>
+<VarMeta IMemento.internal.id="Ki_pitch"/>
+<VarMeta IMemento.internal.id="Kd_pitch"/>
+<VarMeta IMemento.internal.id="gain_gyro_pitch"/>
+<VarMeta IMemento.internal.id="Kp_ff_pitch"/>
+</ExportImportMemento.1>

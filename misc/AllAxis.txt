@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExportImportMemento.1>
+<VarMeta IMemento.internal.id="flightControlPayload"/>
+<VarMeta IMemento.internal.id="gainBytesPitch"/>
+<VarMeta IMemento.internal.id="sensor_init"/>
+<VarMeta IMemento.internal.id="================== Angles ================================"/>
+<VarMeta IMemento.internal.id="roll"/>
+<VarMeta IMemento.internal.id="pitch"/>
+<VarMeta IMemento.internal.id="yaw"/>
+<VarMeta IMemento.internal.id="================== Target ================================"/>
+<VarMeta IMemento.internal.id="target_roll_CLA"/>
+<VarMeta IMemento.internal.id="error_roll"/>
+<VarMeta IMemento.internal.id="error_pitch"/>
+<VarMeta IMemento.internal.id="target_pitch_CLA"/>
+<VarMeta IMemento.internal.id="trim_pitch_f"/>
+<VarMeta IMemento.internal.id="target_yaw_CLA"/>
+<VarMeta IMemento.internal.id="error_yaw"/>
+<VarMeta IMemento.internal.id="target_yaw"/>
+<VarMeta IMemento.internal.id="target_roll"/>
+<VarMeta IMemento.internal.id="target_pitch"/>
+<VarMeta IMemento.internal.id="error_yaw"/>
+<VarMeta IMemento.internal.id="thrust"/>
+<VarMeta IMemento.internal.id="=============== Pitch Control Filter ==================================="/>
+<VarMeta IMemento.internal.id="error_pitch"/>
+<VarMeta IMemento.internal.id="P_pitch"/>
+<VarMeta IMemento.internal.id="I_pitch"/>
+<VarMeta IMemento.internal.id="D_pitch"/>
+<VarMeta IMemento.internal.id="out_first_pitch"/>
+<VarMeta IMemento.internal.id="out_second_pitch"/>
+<VarMeta IMemento.internal.id="gyro_unbiased_pitch"/>
+<VarMeta IMemento.internal.id="================== Pitch Gain ======================================"/>
+<VarMeta IMemento.internal.id="Kp_pitch"/>
+<VarMeta IMemento.internal.id="Ki_pitch"/>
+<VarMeta IMemento.internal.id="Kd_pitch"/>
+<VarMeta IMemento.internal.id="Kp_ff_pitch"/>
+<VarMeta IMemento.internal.id="gain_gyro_pitch"/>
+<VarMeta IMemento.internal.id="================= Roll Control Filter ==================="/>
+<VarMeta IMemento.internal.id="error_roll"/>
+<VarMeta IMemento.internal.id="P_roll"/>
+<VarMeta IMemento.internal.id="I_roll"/>
+<VarMeta IMemento.internal.id="D_roll"/>
+<VarMeta IMemento.internal.id="out_first_roll"/>
+<VarMeta IMemento.internal.id="out_second_roll"/>
+<VarMeta IMemento.internal.id="gyro_unbiased_roll"/>
+<VarMeta IMemento.internal.id="==================== Roll Gain ==================="/>
+<VarMeta IMemento.internal.id="Kp_roll"/>
+<VarMeta IMemento.internal.id="Ki_roll"/>
+<VarMeta IMemento.internal.id="Kd_roll"/>
+<VarMeta IMemento.internal.id="Kp_ff_roll"/>
+<VarMeta IMemento.internal.id="gain_gyro_roll"/>
+<VarMeta IMemento.internal.id="uint_Kp_pitch"/>
+<VarMeta IMemento.internal.id="================= Yaw Control Filter ==================="/>
+<VarMeta IMemento.internal.id="error_yaw"/>
+<VarMeta IMemento.internal.id="P_yaw"/>
+<VarMeta IMemento.internal.id="I_yaw"/>
+<VarMeta IMemento.internal.id="D_yaw"/>
+<VarMeta IMemento.internal.id="out_first_yaw"/>
+<VarMeta IMemento.internal.id="out_second_yaw"/>
+<VarMeta IMemento.internal.id="gyro_unbiased_yaw"/>
+<VarMeta IMemento.internal.id="==================== Yaw Gain ==================="/>
+<VarMeta IMemento.internal.id="Kp_yaw"/>
+<VarMeta IMemento.internal.id="Ki_yaw"/>
+<VarMeta IMemento.internal.id="Kd_yaw"/>
+<VarMeta IMemento.internal.id="gain_gyro_yaw"/>
+<VarMeta IMemento.internal.id="out_first_yaw"/>
+<VarMeta IMemento.internal.id="==================== Miscellaneous =================="/>
+<VarMeta IMemento.internal.id="uint_Kp_pitch"/>
+<VarMeta IMemento.internal.id="uint_Kp_roll"/>
+<VarMeta IMemento.internal.id="uint_Kp_yaw"/>
+<VarMeta IMemento.internal.id="receivedByteA"/>
+<VarMeta IMemento.internal.id="yaw_count"/>
+<VarMeta IMemento.internal.id="trim_roll"/>
+<VarMeta IMemento.internal.id="received_gain_pitch"/>
+<VarMeta IMemento.internal.id="received_gain_roll"/>
+<VarMeta IMemento.internal.id="received_gain_yaw"/>
+<VarMeta IMemento.internal.id="firstGain"/>
+<VarMeta IMemento.internal.id="firstGain"/>
+</ExportImportMemento.1>

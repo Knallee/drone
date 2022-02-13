@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExportImportMemento.1>
+<VarMeta IMemento.internal.id="flightControlPayload"/>
+<VarMeta IMemento.internal.id="headerByteCount"/>
+<VarMeta IMemento.internal.id="countii"/>
+<VarMeta IMemento.internal.id="error_yaw"/>
+<VarMeta IMemento.internal.id="P_yaw"/>
+<VarMeta IMemento.internal.id="I_term_old_yaw"/>
+<VarMeta IMemento.internal.id="D_yaw"/>
+<VarMeta IMemento.internal.id="Kp_yaw"/>
+<VarMeta IMemento.internal.id="Ki_yaw"/>
+<VarMeta IMemento.internal.id="Kd_yaw"/>
+<VarMeta IMemento.internal.id="EPwm1Regs.CMPB"/>
+<VarMeta IMemento.internal.id="EPwm2Regs.CMPA.half.CMPA"/>
+<VarMeta IMemento.internal.id="EPwm2Regs.CMPB"/>
+<VarMeta IMemento.internal.id="EPwm1Regs.CMPA.half.CMPA"/>
+<VarMeta IMemento.internal.id="thrust_CLA"/>
+<VarMeta IMemento.internal.id="yaw"/>
+<VarMeta IMemento.internal.id="target_yaw"/>
+<VarMeta IMemento.internal.id="error_yaw"/>
+<VarMeta IMemento.internal.id="thrust"/>
+<VarMeta IMemento.internal.id="out_second_yaw"/>
+<VarMeta IMemento.internal.id="out_first_yaw"/>
+<VarMeta IMemento.internal.id="gain_gyro_yaw"/>
+<VarMeta IMemento.internal.id="Kp_ff_yaw"/>
+<VarMeta IMemento.internal.id="mean_offset_yaw"/>
+<VarMeta IMemento.internal.id="gyro_unbiased_yaw"/>
+<VarMeta IMemento.internal.id="mean_offset_pitch"/>
+<VarMeta IMemento.internal.id="EPwm2Regs.CMPB"/>
+<VarMeta IMemento.internal.id="EPwm1Regs.CMPA.half.CMPA"/>
+<VarMeta IMemento.internal.id="ready_to_fly"/>
+<VarMeta IMemento.internal.id="sensor_init"/>
+<VarMeta IMemento.internal.id="AdcResult.ADCRESULT2"/>
+<VarMeta IMemento.internal.id="uint_Kp_yaw"/>
+<VarMeta IMemento.internal.id="uint_Ki_yaw"/>
+<VarMeta IMemento.internal.id="uint_Kd_yaw"/>
+<VarMeta IMemento.internal.id="uint_Kp_ff_yaw"/>
+<VarMeta IMemento.internal.id="uint_gain_gyro_yaw"/>
+<VarMeta IMemento.internal.id="thrust"/>
+<VarMeta IMemento.internal.id="gainBytesYaw"/>
+<VarMeta IMemento.internal.id="GY_ByteCount"/>
+<VarMeta IMemento.internal.id="tail"/>
+</ExportImportMemento.1>
